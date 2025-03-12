@@ -19,8 +19,12 @@ class Movie (models.Model):
         return self.title
     
 class Review(models.Model):
-    text = models.TextField(max_length=210)
-    Movie=models.ForeignKey(Movie,null=True,on_delete=models.PROTECT)
+    star_choices =(
+    (i,'* ' * i) for i in range(1, 6)
+    )
+    text = models.TextField()
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
+    stars = models.IntegerField(choices=star_choices, default=1, null=True)
 
     def __str__(self):
         return self.text
