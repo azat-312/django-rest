@@ -26,6 +26,31 @@ def director_detail_api_view(request, id):
                         status=status.HTTP_404_NOT_FOUND)
     data = DirectorDetailSerializer(director, many=False).data
     return Response(data=data)
+    
+@api_view(http_method_names=['GET', 'POST'])
+def product_list_create_api_view(request):
+    if request.method == 'GET':
+
+        # step 2: Reformat QuerySet to list of dictionary (Serializer)
+        data = DirectorSerializer(director, many=True).data
+
+        # step 3: Return Response
+        return Response(data=data)  # data = dict / list / list of dict
+    elif request.method == 'POST':
+        # step 1: Receive data from RequestBody
+        name = request.data.get('name')
+
+        # step 2: Create product by received data
+        
+        director = Director.objects.create(
+                name=name,
+           
+            )
+        director.save()
+
+        # step 3: Return response (data=product, status=201)
+        return Response(data=DirectorDetailSerializer(director).data,
+                        status=status.HTTP_201_CREATED)
 
 
 
@@ -49,8 +74,19 @@ def movie_detail_api_view(request, id):
     except Movie.DoesNotExist:
         return Response(data={'error': 'Product not found!'},
                         status=status.HTTP_404_NOT_FOUND)
-    data = MovieDetailSerializer(movie, many=False).data
-    return Response(data=data)
+    if request.method == 'GET':
+        data = MovieDetailSerializer(movie, many=False).data
+        return Response(data=data)
+    elif request.method == 'DELETE':
+        movie.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == 'PUT':
+        movie.title = request.data.get('title')
+        movie.description = request.data.get('description')
+        movie.duration = request.data.get('duration')
+        movie.save()
+        return Response(data=MovieDetailSerializer(movie).data,
+                        status=status.HTTP_201_CREATED)
 
 
 
@@ -74,8 +110,17 @@ def review_detail_api_view(request, id):
     except Review.DoesNotExist:
         return Response(data={'error': 'Product not found!'},
                         status=status.HTTP_404_NOT_FOUND)
-    data = ReviewDetailSerializer(review, many=False).data
-    return Response(data=data)
+    if request.method == 'GET':
+        data = ReviewDetailSerializer(review, many=False).data
+        return Response(data=data)
+    elif request.method == 'DELETE':
+        review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == 'PUT':
+        review.text = request.data.get('text')
+        review.save()
+        return Response(data=ReviewDetailSerializer(review).data,
+                        status=status.HTTP_201_CREATED)
 
 @api_view(http_method_names=['GET'])
 def movies_reviews_api_view(request):

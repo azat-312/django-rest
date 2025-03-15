@@ -1,5 +1,29 @@
 from django.db import models
 
+
+
+
+class AbstractNameModel(models.Model):
+    class Meta:
+        abstract = True
+
+    name = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Category(AbstractNameModel):
+    parent = models.ForeignKey('self', on_delete=models.CASCADE,
+                               null=True, blank=True)
+
+
+class Tag(AbstractNameModel):
+    pass
+
+
 class Director(models.Model):
     name = models.CharField(max_length=100)
 
