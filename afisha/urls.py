@@ -1,5 +1,6 @@
+
 """
-URL configuration for afisha project.
+URL configuration for Afisha project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -16,14 +17,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from movie_app import views
+from movie_app.views import (
+    directors_list_create_api_view,
+    director_details_api_view,
+    movies_list_create_api_view,
+    movie_detail_api_view,
+    reviews_list_create_api_view,
+    review_detail_api_view,
+    movies_reviews_list_api_view
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/directors/',views.director_api_view),
-    path('api/v1/directors/<int:id>/',views.director_detail_api_view),
-    path('api/v1/movies/',views.movie_api_view),
-    path('api/v1/movies/<int:id>/',views.movie_detail_api_view),
-    path('api/v1/reviews/',views.review_api_view),
-    path('api/v1/reviews/<int:id>/',views.review_detail_api_view),
-    path('api/v1/movies/reviews/',views.movies_reviews_api_view),
+    path('api/v1/directors/', directors_list_create_api_view),
+    path('api/v1/director/<int:id>/', director_details_api_view),
+    path('api/v1/movies/', movies_list_create_api_view),
+    path('api/v1/movies/<int:id>/', movie_detail_api_view),
+    path('api/v1/reviews/', reviews_list_create_api_view),
+    path('api/v1/reviews/<int:id>/', review_detail_api_view),
+    path('api/v1/movies/reviews/', movies_reviews_list_api_view),
 ]
