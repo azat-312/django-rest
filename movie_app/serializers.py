@@ -1,83 +1,73 @@
 
-from .models import Director, Movie, Review
 from rest_framework import serializers
+from .models import Director, Movie, Review
+from rest_framework.exceptions import ValidationError
 
-class DirectorsListSerializer(serializers.ModelSerializer):
-    movies_count = serializers.SerializerMethodField()
-    class Meta:
-        model = Director
-        fields = ['name', 'movies_count']
 
-    def get_movies_count(self, director):
-        return director.movies.count()
-    
+
+
+
 class DirectorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Director
-        fields = ['id', 'name' ]
+        fields = 'name movies '.split()
 
-class MoviesSerializer(serializers.ModelSerializer):
+class DirectorDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Director
+        fields = '__all__'
+
+class DirectorValidateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+
+
+
+class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['title', 'director']
+        depth = 1
+        fields = 'title reviews'.split()
+
 
 class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['title', 'description', 'duration', 'director']
+        fields = '__all__'
 
-class ReviewsSerializer(serializers.ModelSerializer):
+class MovieValidateSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    description = serializers.CharField()
+    duration = serializers.IntegerField()
+    director_id = serializers.IntegerField(min_value=1)
+
+    def validate_director_id(self, director_id):
+        try:
+            Director.objects.get(id=director_id)
+        except Director.DoesNotExist:
+            raise ValidationError('Director does not exist')
+        return director_id
+
+
+
+class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['movie']
-    
+        fields = 'text'.split()
+
+
 class ReviewDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
 
-class MoviesReviewsSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
-    reviews = ReviewDetailSerializer(many=True, read_only=True)
-    class Meta:
-        model = Movie
-        fields = ['title', 'reviews', 'rating']
-
-    def get_rating(self, movie):
-        if movie.reviews.count() == 0:
-            return 0
-        else:
-            reviews = movie.reviews.all()
-            total = sum([review.stars for review in reviews if review.stars is not None])
-            return total / movie.reviews.count()
-
-#Validators
-class DirectorValidateSerializer(serializers.Serializer):
-    name = serializers.CharField(min_length=3, max_length=55)
-
-
-class MovieValidateSerializer(serializers.Serializer):
-    title = serializers.CharField(min_length=2, max_length=50)
-    description = serializers.CharField(max_length=255)
-    duration = serializers.FloatField(min_value=0)
-    director = serializers.IntegerField()
-
-    def validate(self, director):
-        try:
-            Director.objects.get(id = director)
-        except Director.DoesNotExist:
-            raise serializers.ValidationError('Director not found')
-        return director
-
-
 class ReviewValidateSerializer(serializers.Serializer):
-    text = serializers.CharField(max_length=255)
-    stars = serializers.IntegerField(min_value=1, max_value=5)
-    movie = serializers.IntegerField()
+    text = serializers.CharField()
+    stars = serializers.IntegerField(default=0)
+    movie_id = serializers.IntegerField(min_value=1)
 
-    def validate_movie(self, movie):
+    def validate_movie_id(self, movie_id):
         try:
-            Movie.objects.get(id=movie)
+            Movie.objects.get(id=movie_id)
         except Movie.DoesNotExist:
-            raise serializers.ValidationError('Movie not found')
-        return movie
+            raise ValidationError('Movie does not exist')
+        return movie_id
