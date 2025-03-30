@@ -18,9 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from movie_app import views
-
+from . import swagger
 urlpatterns = [
-
+     path('admin/', admin.site.urls),
      path('api/v1/directors/', views.DirectorListAPIView.as_view()),
      path('api/v1/directors/<int:id>/', views.DirectorDetailAPIView.as_view()),
      path('api/v1/movies/', views.MovieListAPIView.as_view()),
@@ -29,3 +29,5 @@ urlpatterns = [
      path('api/v1/reviews/<int:id>/', views.ReviewsDetailAPIView.as_view()),
      path('api/v1/users/', include('users.urls')),
 ]
+
+urlpatterns += swagger.urlpatterns
