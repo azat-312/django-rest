@@ -71,3 +71,29 @@ class ReviewValidateSerializer(serializers.Serializer):
         except Movie.DoesNotExist:
             raise ValidationError('Movie does not exist')
         return movie_id
+
+class ReviewValidateSerializer(serializers.Serializer):
+    text = serializers.CharField(max_length=255)
+    stars = serializers.IntegerField(min_value=1, max_value=5)
+    movie = serializers.IntegerField()
+
+    def validate_movie(self, movie):
+        try:
+            Movie.objects.get(id=movie)
+        except Movie.DoesNotExist:
+            raise serializers.ValidationError('Movie not found')
+        return movie
+class MoviesReviewsSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+    reviews = ReviewDetailSerializer(many=True, read_only=True)
+class Meta:
+    model = Movie
+    fields = ['title', 'reviews', 'rating']
+
+    def get_rating(self, movie):
+        if movie.reviews.count() == 0:
+            return 0
+        else:
+            reviews = movie.reviews.all()
+            total = sum([review.stars for review in reviews if review.stars is not None])
+            return total / movie.reviews.count()

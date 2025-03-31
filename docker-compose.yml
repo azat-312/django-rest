@@ -1,0 +1,35 @@
+services:
+  afisha_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: afisha_api
+    command: >
+      sh -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py collecstatic --no-input &&
+      gunicorn afiha.wsgi:application --bind 0.0.0.0:8000 --log-level info"
+    ports:
+      - "2000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - afisha_db 
+    volumes:
+      - ../:/usr/src/app
+      - static_volume:/usr/src/app/back_static/
+      - media_volume:/usr/src/app/back_media/
+  
+  afisha_db:
+    image: 'postgres:14'
+    environment:
+      POSTGRES_DB: 'kinoo_db'
+      POSTGRES_USER: 'kino_user_db'
+      POSTGRES_PASSWORD: '123'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+volumes:
+  static_volume:
+  media_volume:
+  postgres_data:
